@@ -4,7 +4,14 @@ import dropdown_icon from "../components/assets/dropdown_icon.png";
 import Item from "../components/Item/Item";
 
 const ShopCategories = (props) => {
-  const { all_product } = useContext(ShopContext);
+  const { allProduct } = useContext(ShopContext);
+  
+ 
+  if (!allProduct || allProduct.length === 0) {
+    return <div>Loading products...</div>; 
+  }
+
+  console.log("Products are", allProduct);
 
   return (
     <div className="shop-category flex flex-col items-center">
@@ -17,7 +24,6 @@ const ShopCategories = (props) => {
         />
       </div>
 
-      {/* Index and Sort Section */}
       <div className="shopcategory-indexSort flex justify-between items-center w-full max-w-[1200px] px-[20px] mb-[50px]">
         <p>
           <span className="font-semibold">Showing 1-12 </span> Out of 36 products
@@ -27,10 +33,9 @@ const ShopCategories = (props) => {
         </div>
       </div>
 
-      {/* Product Grid */}
       <div className="pt-[20px]"></div>
       <div className="shop-category-product grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-[40px] gap-y-[60px] w-full max-w-[1200px] px-[20px]">
-        {all_product.map((item) => {
+        {allProduct.map((item) => {
           if (props.category === item.category) {
             return (
               <div
@@ -52,16 +57,14 @@ const ShopCategories = (props) => {
         })}
       </div>
 
-      {/* Load More Button */}
       <div className="pt-[100px]">
-      <div
-        className="shopcategory-loadmore flex items-center justify-center mt-[100px] w-[233px] h-[69px] rounded-[75px] bg-[#ededed] text-[#787878] text-[18px] font-medium shadow-md cursor-pointer hover:bg-[#d6d6d6] transition duration-300"
-        style={{ marginBottom: "100px" }}
-      >
-        Explore More
+        <div
+          className="shopcategory-loadmore flex items-center justify-center mt-[100px] w-[233px] h-[69px] rounded-[75px] bg-[#ededed] text-[#787878] text-[18px] font-medium shadow-md cursor-pointer hover:bg-[#d6d6d6] transition duration-300"
+          style={{ marginBottom: "100px" }}
+        >
+          Explore More
+        </div>
       </div>
-      </div>
-      
     </div>
   );
 };
