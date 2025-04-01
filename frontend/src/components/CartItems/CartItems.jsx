@@ -3,8 +3,19 @@ import { ShopContext } from "../../context/ShopContext";
 import { IoMdRemoveCircle } from "react-icons/io";
 
 const CartItems = () => {
-  const { getTotalcartAmount, all_product, cartItems, removeFromCart, addToCart } =
+  const { getTotalcartAmount, allProduct, cartItems, removeFromCart, addToCart } =
     useContext(ShopContext);
+
+  // ✅ Prevent crashing if data hasn't loaded
+  if (allProduct.length === 0) {
+    return <div className="text-center text-lg font-semibold">Loading...</div>;
+  }
+
+  // ✅ Check if there are any cart items
+  const cartProductIds = Object.keys(cartItems).filter((id) => cartItems[id] > 0);
+  if (cartProductIds.length === 0) {
+    return <div className="text-center text-lg font-semibold">No items in cart</div>;
+  }
 
   return (
     <div className="cartItems mx-auto p-4 md:p-8 lg:p-16">
@@ -23,67 +34,63 @@ const CartItems = () => {
       <hr className="h-[2px] bg-gray-200" />
 
       {/* Cart Items */}
-      {all_product.map((e) => {
-        if (cartItems[e.id] > 0) {
-          return (
-            <div
-              key={e.id}
-              className="cart-item grid grid-cols-2 md:grid-cols-6 gap-4 py-4 px-0 text-sm md:text-base text-gray-700 items-center"
-            >
-              {/* Product Image */}
-              <div className="col-span-2 md:col-span-1 flex justify-center items-center">
-                <img
-                  className="w-[100px] md:w-[150px] object-contain"
-                  src={e.image}
-                  alt={e.name}
-                />
-              </div>
+      {cartProductIds.map((id) => {
+        const product = allProduct.find((e) => e.id === Number(id));
+        if (!product) return null; // Prevent errors if product is not found
 
-              {/* Product Title */}
-              <p className="col-span-2 md:col-span-1 text-center">{e.name}</p>
-
-              {/* Product Price */}
-              <p className="hidden md:block col-span-1 text-center">
-                ${e.new_price}
-              </p>
-
-              {/* Quantity Controls */}
-              <div className="col-span-2 md:col-span-1 flex justify-center items-center gap-2">
-                <button
-                  onClick={() => addToCart(e.id)}
-                  className="bg-green-300 text-white font-bold py-1 px-3 rounded hover:bg-green-600 transition"
-                >
-                  +
-                </button>
-                <span className="font-bold">{cartItems[e.id]}</span>
-                <button
-                  onClick={() => {
-                    if (cartItems[e.id] > 1) {
-                      removeFromCart(e.id);
-                    }
-                  }}
-                  className="bg-red-300 text-white font-bold py-1 px-3 rounded hover:bg-red-600 transition"
-                >
-                  -
-                </button>
-              </div>
-
-              {/* Product Total */}
-              <p className="hidden md:block col-span-1 text-center">
-                ${(e.new_price * cartItems[e.id]).toFixed(2)}
-              </p>
-
-              {/* Remove Icon */}
-              <div className="col-span-2 md:col-span-1 flex justify-center items-center">
-                <IoMdRemoveCircle
-                  onClick={() => removeFromCart(e.id)}
-                  className="w-6 h-6 text-red-500 cursor-pointer hover:text-red-700 transition"
-                />
-              </div>
+        return (
+          <div
+            key={product.id}
+            className="cart-item grid grid-cols-2 md:grid-cols-6 gap-4 py-4 px-0 text-sm md:text-base text-gray-700 items-center"
+          >
+            {/* Product Image */}
+            <div className="col-span-2 md:col-span-1 flex justify-center items-center">
+              <img
+                className="w-[100px] md:w-[150px] object-contain"
+                src={product.image}
+                alt={product.name}
+              />
             </div>
-          );
-        }
-        return null;
+
+            {/* Product Title */}
+            <p className="col-span-2 md:col-span-1 text-center">{product.name}</p>
+
+            {/* Product Price */}
+            <p className="hidden md:block col-span-1 text-center">
+              ${product.new_price}
+            </p>
+
+            {/* Quantity Controls */}
+            <div className="col-span-2 md:col-span-1 flex justify-center items-center gap-2">
+              <button
+                onClick={() => addToCart(product.id)}
+                className="bg-green-300 text-white font-bold py-1 px-3 rounded hover:bg-green-600 transition"
+              >
+                +
+              </button>
+              <span className="font-bold">{cartItems[product.id]}</span>
+              <button
+                onClick={() => removeFromCart(product.id)}
+                className="bg-red-300 text-white font-bold py-1 px-3 rounded hover:bg-red-600 transition"
+              >
+                -
+              </button>
+            </div>
+
+            {/* Product Total */}
+            <p className="hidden md:block col-span-1 text-center">
+              ${(product.new_price * cartItems[product.id]).toFixed(2)}
+            </p>
+
+            {/* Remove Icon */}
+            <div className="col-span-2 md:col-span-1 flex justify-center items-center">
+              <IoMdRemoveCircle
+                onClick={() => removeFromCart(product.id)}
+                className="w-6 h-6 text-red-500 cursor-pointer hover:text-red-700 transition"
+              />
+            </div>
+          </div>
+        );
       })}
 
       {/* Cart Total Section */}

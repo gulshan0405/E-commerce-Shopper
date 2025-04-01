@@ -1,7 +1,15 @@
-import data_product from '../assets/data';
+import { useEffect, useState } from 'react';
 import Item from '../Item/Item';
 
 const Popular = () => {
+  const [popularProducts,setPopularProducts] =useState([]);
+
+  useEffect(() => {
+    fetch("http://localhost:4000/popularinwomen")
+      .then((response) => response.json())
+      .then((data) => setPopularProducts(data))
+      .catch((error) => console.error("Error fetching data:", error));
+  }, []);
   return (
     <div className="popular w-full min-h-[500px] flex items-center justify-center py-8 px-4 sm:px-6 lg:px-8">
     <div className="max-w-7xl mx-auto w-full">
@@ -16,7 +24,7 @@ const Popular = () => {
       {/* Centered Grid Container */}
       <div className="flex justify-center">
         <div className="grid grid-cols-1 sm:grid-cols-2  md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 w-full max-w-6xl ">
-          {data_product.map((item) => (
+          {popularProducts.map((item) => (
             <Item
               key={item.id}
               id={item.id}

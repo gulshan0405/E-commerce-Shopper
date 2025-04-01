@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const path = require("path");
 const cors = require("cors");
-const { log } = require("console");
+const { log, error } = require("console");
 
 app.use(express.json());
 app.use(cors());
@@ -199,17 +199,59 @@ app.post("/login", async (req, res) => {
     if (passCompare) {
       const data = {
         user: {
-          id:user.id
+          id: user.id,
         },
       };
-      const token=jwt.sign(data,'secret_ecom');
-      res.json({success:true,token});
+      const token = jwt.sign(data, "secret_ecom");
+      res.json({ success: true, token });
+    } else {
+      res.json({ success: false, error: "Wrong Passwod" });
     }
-    else{
-      res.json({success:false,error:"Wrong Passwod"});
+  } else {
+    res.json({ success: false, error: "Wrong Email ID" });
+  }
+});
+
+//Creating  endPoint for new collection data
+app.get("/newcollections", async (req, res) => {
+  let product = await Product.find({});
+  let newcollection = product.slice(1).slice(-8);
+  console.log("NewCollection Fetched");
+  res.send(newcollection);
+});
+
+//Creating endPoint in Popular in womens section
+app.get("/popularinwomen", async (req, res) => {
+  let products = await Product.find({ category: "women" });
+  let popular_in_women = products.slice(0, 4);
+  console.log("Popular in Women fetched");
+  res.send(popular_in_women);
+});
+
+//Creating Middleware to fetch user
+const fetchUser = async (req, res, next) => {
+  const token = req.header("auth-token");
+  if (!token) {
+    res.status(401).send({ errors: "Please Authentication Using Valid Token" });
+  } else {
+    try {
+      const data = jwt.verify(token, "secret_ecom");
+      req.user = data.user;
+      next();
+    } catch (error) {
+      res
+        .status(401)
+        .send({ errors: "please authenticate using the valid token" });
     }
   }
-  else{
-    res.json({success:false ,error:"Wrong Email ID"})
-  }
+};
+//Creating endpoint for adding products in cartdata
+app.post("/addtocart", fetchUser, async (req, res) => {
+  let userData = await User.findOne({ _id: req.user.id });
+  userData.cartData[req.body.itemId] += 1;
+  await User.findOneAndUpdate(
+    { _id: req.user.id },
+    { cartData: userData.cartData }
+  );
+  res.send("Added");
 });
