@@ -153,6 +153,7 @@ const User = mongoose.model("Users", {
   },
   cartData: {
     type: Object,
+    ref : Product,
   },
   date: {
     type: Date,
@@ -247,11 +248,31 @@ const fetchUser = async (req, res, next) => {
 };
 //Creating endpoint for adding products in cartdata
 app.post("/addtocart", fetchUser, async (req, res) => {
-  let userData = await User.findOne({ _id: req.user.id });
-  userData.cartData[req.body.itemId] += 1;
-  await User.findOneAndUpdate(
-    { _id: req.user.id },
-    { cartData: userData.cartData }
-  );
-  res.send("Added");
+  try {
+    let userData = await User.findOne({ _id: req.user.id });
+
+    if (!userData.cartData) userData.cartData = {};
+    const itemId = req.body.itemId;
+
+    userData.cartData[itemId] = (userData.cartData[itemId] || 0) + 1;
+
+    await User.findOneAndUpdate(
+      { _id: req.user.id },
+      { cartData: userData.cartData }
+    );
+
+    res.json({ message: "Added to cart", cart: userData.cartData });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.get("/getcart", fetchUser, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    res.json({ cartData: user.cartData || {} });
+  } catch (err) {
+    res.status(500).json({ message: "Something went wrong while fetching cart" });
+  }
 });

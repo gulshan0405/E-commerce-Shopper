@@ -24,25 +24,57 @@ const ShopContextProvider = (props) => {
           .catch((error) => console.error("Error fetching products:", error)); 
       }, []);
       
+      useEffect(() => {
+        const fetchCartItems = async () => {
+            const token = localStorage.getItem('auth-token');
+            if (!token) return;
+    
+            try {
+                const res = await fetch('http://localhost:4000/getcart', {
+                    method: 'GET',
+                    headers: {
+                        'auth-token': token,
+                    },
+                });
+    
+                if (!res.ok) {
+                    throw new Error('Failed to fetch cart items');
+                }
+    
+                const data = await res.json();
+                console.log("Fetched Cart Items:", data);
+    
+                // Set cartItems from backend (example assumes shape is { 1: 2, 4: 1, ... })
+                setCartItems(data.cartData || {});
+            } catch (error) {
+                console.error("Error fetching cart items:", error);
+            }
+        };
+    
+        fetchCartItems();
+    }, []);
+    
 
-    const addToCart = useCallback((itemId) => {
-        setCartItems((prev) => ({ ...prev, [itemId]: prev[itemId] + 1 }));
-        if(localStorage.getItem('auth-token')){
-           fetch('http://loaclhost:4000/addtocart',{
-            method:'POST',
-            headers:{
-                Accept:"application/form-data",
-                'auth-token':`${localStorage.getItem('auth-token')}`,
-                'Content-Type':'application/json',
-            },
-            body:JSON.stringify({"itemId":itemId}),
-           }) 
-          .then((response)=>response.json())
-          .then((data)=>console.log(data));
-          
+      const addToCart = useCallback((itemId) => {
+        console.log("entered in add to cart");
+        setCartItems((prev) => ({ ...prev, [itemId]: (prev[itemId] || 0) + 1 }));
+    
+        if(localStorage.getItem('auth-token')) {
+            fetch('http://localhost:4000/addtocart', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'auth-token': localStorage.getItem('auth-token'),
+                },
+                body: JSON.stringify({ itemId }),
+            })
+            .then((res) => res.json())
+            .then((data) => console.log("Server response:", data))
+            .catch((err) => console.error("Fetch error:", err));
         }
     }, []);
-
+    
     const removeFromCart = useCallback((itemId) => {
         setCartItems((prev) => ({ ...prev, [itemId]: prev[itemId] - 1 }));
     }, []);

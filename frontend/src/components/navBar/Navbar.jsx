@@ -10,6 +10,7 @@ const Navbar = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false); // Sidebar state
   const { getTotalCartItems } = useContext(ShopContext);
 
+  console.log(getTotalCartItems());
   return (
     <div className="navbar flex justify-between px-4 sm:px-6 md:px-8 lg:px-16 xl:px-24 p-4 shadow-md">
       {/* Sidebar Toggle Button */}
